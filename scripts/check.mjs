@@ -1,0 +1,10 @@
+import {readFileSync,existsSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const html=readFileSync('dist/index.html','utf8');
+const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
+assert.equal(ids.length,new Set(ids).size,'IDs must be unique');
+for(const [,id] of html.matchAll(/href="#([^"]+)"/g)) assert(ids.includes(id),`Missing anchor ${id}`);
+for(const [,file] of html.matchAll(/(?:src|href)="((?!https?:|#)[^"]+)"/g)) assert(existsSync(`dist/${file}`),`Missing asset ${file}`);
+assert(html.includes('Autler’s'),'Brand missing');
+assert(!html.includes('mailto:hello@'),'Do not invent a contact address');
+console.log('Passed: local assets, section links, unique IDs, brand and contact configuration.');
